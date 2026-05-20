@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────
+   HOT SPICY FAST FOOD — Global Design System
+   ────────────────────────────────────────────── */
+
+:root {
+  --brand-red: #E63946;
+  --brand-red-dark: #B71C1C;
+  --brand-red-light: #FF6B6B;
+  --brand-orange: #FF8C42;
+  --brand-gold: #FFD700;
+  --brand-cream: #FFF5E1;
+  --surface-dark: #0A0A0A;
+  --surface-card: #141414;
+}
+
+/* ── Base ─────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-red) var(--surface-dark);
+}
+
+body {
+  background: var(--surface-dark);
+  color: #f5f5f5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brand-red);
+  border-radius: 3px;
+}
+
+/* ── Selection ────────────────────────────── */
+::selection {
+  background: rgba(230, 57, 70, 0.4);
+  color: #fff;
+}
+
+/* ── Typography flourishes ────────────────── */
+.text-gradient-brand {
+  background: linear-gradient(135deg, var(--brand-red-light), var(--brand-orange), var(--brand-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-fire {
+  background: linear-gradient(180deg, var(--brand-gold) 0%, var(--brand-orange) 40%, var(--brand-red) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glow effects ─────────────────────────── */
+.glow-red {
+  box-shadow: 0 0 30px rgba(230, 57, 70, 0.3),
+              0 0 60px rgba(230, 57, 70, 0.15);
+}
+
+.glow-red-text {
+  text-shadow: 0 0 40px rgba(230, 57, 70, 0.5),
+               0 0 80px rgba(230, 57, 70, 0.2);
+}
+
+/* ── Glass morphism cards ─────────────────── */
+.glass-card {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-card-hover {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+  background: rgba(30, 30, 30, 0.8);
+  border-color: rgba(230, 57, 70, 0.3);
+  box-shadow: 0 8px 32px rgba(230, 57, 70, 0.15);
+  transform: translateY(-4px);
+}
+
+/* ── Ambient background glow ──────────────── */
+.ambient-glow {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 800px;
+  height: 800px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Section transitions ──────────────────── */
+.section-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.section-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Noise texture overlay ────────────────── */
+.noise-overlay::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Canvas wrapper ───────────────────────── */
+.canvas-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.canvas-wrapper canvas {
+  pointer-events: auto;
+}
+
+/* ── Animated underline ───────────────────── */
+.animated-underline {
+  position: relative;
+}
+.animated-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand-red), var(--brand-orange));
+  transition: width 0.4s ease;
+}
+.animated-underline:hover::after {
+  width: 100%;
+}
+
+/* ── Responsive canvas ────────────────────── */
+@media (max-width: 768px) {
+  .canvas-wrapper {
+    height: 50vh;
+    position: relative;
+  }
+}
+
+/* ── Loading screen ───────────────────────── */
+.loader-container {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-dark);
+}
+
+.loader-flame {
+  width: 60px;
+  height: 60px;
+  background: conic-gradient(from 0deg, var(--brand-red), var(--brand-orange), var(--brand-gold), var(--brand-red));
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
