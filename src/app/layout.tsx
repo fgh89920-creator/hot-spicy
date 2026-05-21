@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Outfit, Cairo } from "next/font/google";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/ui/CartDrawer";
 import OrderHistoryDrawer from "@/components/ui/OrderHistoryDrawer";
 import LiveNotificationListener from "@/components/ui/LiveNotificationListener";
+import MobileBottomNav from "@/components/ui/MobileBottomNav";
 import "./globals.css";
 
 const inter = Inter({
@@ -48,6 +49,13 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -63,6 +71,7 @@ export default function RootLayout({
           <CartDrawer />
           <OrderHistoryDrawer />
           <LiveNotificationListener />
+          <MobileBottomNav />
         </CartProvider>
       </body>
     </html>

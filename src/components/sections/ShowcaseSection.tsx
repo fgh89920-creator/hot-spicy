@@ -119,13 +119,13 @@ export default function ShowcaseSection() {
     <section
       id="showcase"
       ref={sectionRef}
-      className="relative py-32 lg:py-40 overflow-hidden"
+      className="relative py-20 sm:py-32 lg:py-40 overflow-hidden"
     >
       {/* Section background accent */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-red/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-orange/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section heading */}
         <div className="showcase-heading text-center mb-20">
           <motion.span
@@ -143,12 +143,12 @@ export default function ShowcaseSection() {
         </div>
 
         {/* Showcase cards */}
-        <div className="space-y-24 lg:space-y-32">
+        <div className="space-y-12 sm:space-y-24 lg:space-y-32">
           {showcaseItems.map((item, i) => (
             <div
               key={item.title}
               ref={(el) => { cardsRef.current[i] = el; }}
-              className="glass-card rounded-3xl p-8 lg:p-12 relative overflow-hidden group"
+              className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-12 relative overflow-hidden group"
               style={{ perspective: "1000px" }}
             >
               {/* Accent border glow */}
@@ -162,7 +162,7 @@ export default function ShowcaseSection() {
               <div
                 className={`flex flex-col ${
                   i % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
-                } items-center gap-12`}
+                } items-center gap-6 sm:gap-12`}
               >
                 {/* Text side */}
                 <div className="flex-1 space-y-6">
@@ -186,9 +186,9 @@ export default function ShowcaseSection() {
                   </p>
 
                   {/* Stat */}
-                  <div className="flex items-end gap-3 pt-4">
+                  <div className="flex items-end gap-3 pt-2 sm:pt-4">
                     <span
-                      className="stat-number font-display text-5xl lg:text-6xl font-black"
+                      className="stat-number font-display text-4xl sm:text-5xl lg:text-6xl font-black"
                       style={{ color: item.accent }}
                     >
                       {item.stat}
@@ -223,7 +223,7 @@ export default function ShowcaseSection() {
 
                     {/* Food product image */}
                     <motion.div
-                      className="relative w-72 h-72 lg:w-80 lg:h-80 z-10"
+                      className="relative w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 z-10"
                       whileHover={{ scale: 1.05, rotate: i % 2 === 0 ? 5 : -5 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >

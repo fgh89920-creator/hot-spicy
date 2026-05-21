@@ -115,7 +115,7 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
   };
 
   return (
-    <section id="builder" className="relative py-32 lg:py-40 overflow-hidden">
+    <section id="builder" className="relative py-20 sm:py-32 lg:py-40 overflow-hidden">
       {/* Ambient background glow — shifts with active color */}
       <motion.div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none blur-[150px]"
@@ -125,7 +125,7 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
         transition={{ duration: 1.5, ease: "easeInOut" }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Section header */}
         <div className="text-center mb-16">
           <span className="inline-block text-sm font-semibold tracking-[0.15em] uppercase text-brand-red mb-4 font-arabic">
@@ -141,14 +141,14 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
 
         <div className="flex flex-col lg:flex-row gap-12 items-start">
           {/* ─── Selector pills ─── */}
-          <div className="w-full lg:w-80 flex flex-row lg:flex-col gap-3 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-none">
+          <div className="w-full lg:w-80 flex flex-row lg:flex-col gap-3 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
             {variants.map((v) => (
               <motion.button
                 key={v.id}
                 onClick={() => handleSelect(v)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative flex items-center gap-4 px-5 py-4 rounded-2xl text-left transition-all duration-500 min-w-[200px] lg:min-w-0 ${
+                className={`relative flex items-center gap-4 px-5 py-4 rounded-2xl text-left transition-all duration-500 min-w-[160px] sm:min-w-[200px] lg:min-w-0 ${
                   activeId === v.id
                     ? "glass-card border-brand-red/30"
                     : "bg-transparent border border-white/5 hover:border-white/10"
@@ -211,7 +211,7 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
                   duration: 0.5,
                   ease: [0.4, 0, 0.2, 1],
                 }}
-                className="glass-card rounded-3xl p-8 lg:p-12 relative overflow-hidden"
+                className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-12 relative overflow-hidden"
               >
                 {/* Accent corner glow */}
                 <div
@@ -219,11 +219,11 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
                   style={{ backgroundColor: active.color }}
                 />
 
-                <div className="flex flex-col md:flex-row gap-10 items-center">
+                <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-center">
                   {/* Product visual — REAL FOOD IMAGE */}
                   <div className="relative flex-shrink-0">
                     <motion.div
-                      className="w-56 h-56 lg:w-64 lg:h-64 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                      className="w-full max-w-[220px] sm:w-56 sm:h-56 lg:w-64 lg:h-64 aspect-square rounded-2xl flex items-center justify-center relative overflow-hidden"
                       style={{
                         background: `radial-gradient(circle at center, ${active.color}20, transparent 70%)`,
                       }}
