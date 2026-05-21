@@ -24,15 +24,15 @@ import {
 import { Order } from "@/context/CartContext";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyApni-0fBXX-AxiyyESDWSSWAWExMSzafo",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "hot-spicy-fgh.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "hot-spicy-fgh",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "hot-spicy-fgh.firebasestorage.app",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "180458543251",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:180458543251:web:c7c62b84bb67cf4a441566",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-export const isFirebaseEnabled = !!firebaseConfig.apiKey;
+export const isFirebaseEnabled = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
 
 let app;
 let auth: Auth | null = null;

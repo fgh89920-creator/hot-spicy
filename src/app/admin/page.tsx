@@ -54,7 +54,10 @@ export default function AdminDashboard() {
 
   const handlePasscodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (["1234", "admin", "hotspicy2026"].includes(passcode.toLowerCase())) {
+    const validPasscodes = (process.env.NEXT_PUBLIC_ADMIN_PASSCODES || "hotspicy2026")
+      .split(",")
+      .map((p) => p.trim().toLowerCase());
+    if (validPasscodes.includes(passcode.toLowerCase())) {
       try {
         setAuthWarning(null);
         await loginAnonymously();
