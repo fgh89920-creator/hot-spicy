@@ -4,10 +4,12 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useCart, Order, CartItem } from "@/context/CartContext";
-import { isFirebaseEnabled, placeOrderFirebase } from "@/lib/firebase";
+import { isFirebaseEnabled, placeOrderFirebase, subscribeToOrdersFirebase } from "@/lib/firebase";
 
 export default function AdminDashboard() {
   const { orders, updateOrderStatus, clearAllOrders, user, loginWithGoogle, loginAnonymously, logout } = useCart();
+  const [adminOrders, setAdminOrders] = useState<Order[]>([]);
+  const [authWarning, setAuthWarning] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [passcode, setPasscode] = useState("");
@@ -19,28 +21,57 @@ export default function AdminDashboard() {
     setMounted(true);
     if (typeof window !== "undefined") {
       const isAuth = sessionStorage.getItem("admin_authorized") === "true";
+      const authMethod = sessionStorage.getItem("admin_auth_method");
       setPasscodeAuthorized(isAuth);
-      if (isAuth) {
+      if (isAuth && authMethod === "passcode") {
         // Automatically restore anonymous Firebase Auth session for passcode admins on load
-        loginAnonymously().catch((err) => console.error("Anonymous session restore failed:", err));
+        loginAnonymously().catch((err) => {
+          console.error("Anonymous session restore failed:", err);
+          setAuthWarning(
+            "تنبيه: فشل تسجيل الدخول المجهول في Firebase. يرجى التأكد من تفعيل (Anonymous Authentication) في وحدة تحكم Firebase لتتمكن من رؤية وتحديث الطلبات الحية."
+          );
+        });
       }
     }
   }, [loginAnonymously]);
+
+  // Subscribe to all orders in real-time when passcodeAuthorized is true
+  useEffect(() => {
+    if (!passcodeAuthorized) return;
+
+    if (isFirebaseEnabled) {
+      const unsubscribe = subscribeToOrdersFirebase((updatedOrders) => {
+        setAdminOrders(updatedOrders);
+      }, "admin@hotspicy.com");
+
+      return () => {
+        unsubscribe();
+      };
+    } else {
+      setAdminOrders(orders);
+    }
+  }, [passcodeAuthorized, orders]);
 
   const handlePasscodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (["1234", "admin", "hotspicy2026"].includes(passcode.toLowerCase())) {
       try {
+        setAuthWarning(null);
         await loginAnonymously();
         setPasscodeAuthorized(true);
         setShowError(false);
         sessionStorage.setItem("admin_authorized", "true");
+        sessionStorage.setItem("admin_auth_method", "passcode");
       } catch (err) {
         console.error("Passcode Firebase Auth failed:", err);
         // Fallback to offline mode
         setPasscodeAuthorized(true);
         setShowError(false);
         sessionStorage.setItem("admin_authorized", "true");
+        sessionStorage.setItem("admin_auth_method", "passcode");
+        setAuthWarning(
+          "تنبيه: فشل تسجيل الدخول المجهول في Firebase. يرجى التأكد من تفعيل (Anonymous Authentication) في وحدة تحكم Firebase لتتمكن من رؤية وتحديث الطلبات الحية."
+        );
       }
     } else {
       setShowError(true);
@@ -50,14 +81,18 @@ export default function AdminDashboard() {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle("", "", "");
+      setPasscodeAuthorized(true);
+      sessionStorage.setItem("admin_authorized", "true");
+      sessionStorage.setItem("admin_auth_method", "google");
+      setShowError(false);
     } catch (err) {
       console.error("Google Auth failed:", err);
     }
   };
 
-
   const handleAdminLogout = async () => {
     sessionStorage.removeItem("admin_authorized");
+    sessionStorage.removeItem("admin_auth_method");
     setPasscodeAuthorized(false);
     if (user) {
       try {
@@ -76,8 +111,8 @@ export default function AdminDashboard() {
     );
   }
 
-  // If not authorized via either Google Auth OR the passcode, show premium login screen
-  if (!user && !passcodeAuthorized) {
+  // If not authorized via the passcode, show premium login screen
+  if (!passcodeAuthorized) {
     return (
       <div className="min-h-screen bg-surface-dark text-white font-arabic p-6 flex flex-col justify-center items-center relative overflow-hidden">
         {/* Background glow effects */}
@@ -158,19 +193,21 @@ export default function AdminDashboard() {
     );
   }
 
-  // Calculate Statistics using the single source of truth (orders from context)
-  const totalOrders = (orders || []).length;
-  const activeOrders = (orders || []).filter(
+
+
+  // Calculate Statistics using the single source of truth (adminOrders)
+  const totalOrders = (adminOrders || []).length;
+  const activeOrders = (adminOrders || []).filter(
     (o) => o && (o.status === "preparing" || o.status === "delivering")
   ).length;
-  const completedOrders = (orders || []).filter((o) => o && o.status === "completed").length;
-  const totalSales = (orders || [])
+  const completedOrders = (adminOrders || []).filter((o) => o && o.status === "completed").length;
+  const totalSales = (adminOrders || [])
     .filter((o) => o && o.status === "completed")
     .reduce((sum, o) => sum + (o.subtotal || 0), 0);
 
   // Dynamic Top Selling Item calculation
   const itemCounts: { [key: string]: { count: number; name: string } } = {};
-  (orders || []).forEach((o) => {
+  (adminOrders || []).forEach((o) => {
     if (o && o.items) {
       o.items.forEach((item) => {
         if (item) {
@@ -193,7 +230,7 @@ export default function AdminDashboard() {
   });
 
   // Filtered orders list
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = adminOrders.filter((order) => {
     if (filterStatus === "all") return true;
     return order.status === filterStatus;
   });
@@ -338,6 +375,21 @@ export default function AdminDashboard() {
             </Link>
           </div>
         </div>
+
+        {/* Auth Warning Alert */}
+        {authWarning && (
+          <div className="p-4 bg-brand-red/10 border border-brand-red/20 rounded-2xl text-brand-red text-xs sm:text-sm font-bold flex items-center gap-3 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-red" />
+            <span className="text-lg">⚠️</span>
+            <p className="flex-1 text-right">{authWarning}</p>
+            <button 
+              onClick={() => setAuthWarning(null)} 
+              className="text-white/40 hover:text-white transition-colors p-1"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">

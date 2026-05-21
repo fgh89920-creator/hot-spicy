@@ -135,10 +135,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Real-time Firestore Subscription (triggers only when user changes to avoid Permission Denied errors on load)
+  // Restrict to only normal clients (not admin) so admin page can manage its own subscription to all orders securely.
   useEffect(() => {
     if (!isFirebaseEnabled) return;
 
-    if (user) {
+    if (user && user.email !== "admin@hotspicy.com") {
       const unsubscribe = subscribeToOrdersFirebase((updatedOrders) => {
         setOrders(updatedOrders);
       }, user.email);
@@ -251,8 +252,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const loginAnonymously = async () => {
     if (isFirebaseEnabled) {
-      const firebaseUser = await loginAnonymouslyFirebase();
-      setUser(firebaseUser);
+      try {
+        const firebaseUser = await loginAnonymouslyFirebase();
+        setUser(firebaseUser);
+      } catch (err) {
+        console.error("Firebase loginAnonymously failed, falling back to local admin user:", err);
+        setUser({
+          name: "مشرف النظام",
+          email: "admin@hotspicy.com",
+          picture: "A",
+        });
+        throw err;
+      }
     } else {
       setUser({
         name: "مشرف النظام",
