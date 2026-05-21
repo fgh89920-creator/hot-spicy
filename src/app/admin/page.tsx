@@ -3,26 +3,70 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
 import { useCart, Order, CartItem } from "@/context/CartContext";
+import { isFirebaseEnabled, placeOrderFirebase } from "@/lib/firebase";
 
 export default function AdminDashboard() {
-  const { orders, updateOrderStatus, clearAllOrders } = useCart();
+  const { orders, updateOrderStatus, clearAllOrders, user, loginWithGoogle, loginAnonymously, logout } = useCart();
   const [mounted, setMounted] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [localOrders, setLocalOrders] = useState<Order[]>([]);
+  const [passcode, setPasscode] = useState("");
+  const [passcodeAuthorized, setPasscodeAuthorized] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   // Avoid hydration mismatch by waiting for mount
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  // Synchronize local state with context orders (which read from localStorage)
-  useEffect(() => {
-    if (mounted) {
-      setLocalOrders(orders);
+    if (typeof window !== "undefined") {
+      const isAuth = sessionStorage.getItem("admin_authorized") === "true";
+      setPasscodeAuthorized(isAuth);
+      if (isAuth) {
+        // Automatically restore anonymous Firebase Auth session for passcode admins on load
+        loginAnonymously().catch((err) => console.error("Anonymous session restore failed:", err));
+      }
     }
-  }, [orders, mounted]);
+  }, [loginAnonymously]);
+
+  const handlePasscodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (["1234", "admin", "hotspicy2026"].includes(passcode.toLowerCase())) {
+      try {
+        await loginAnonymously();
+        setPasscodeAuthorized(true);
+        setShowError(false);
+        sessionStorage.setItem("admin_authorized", "true");
+      } catch (err) {
+        console.error("Passcode Firebase Auth failed:", err);
+        // Fallback to offline mode
+        setPasscodeAuthorized(true);
+        setShowError(false);
+        sessionStorage.setItem("admin_authorized", "true");
+      }
+    } else {
+      setShowError(true);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle("", "", "");
+    } catch (err) {
+      console.error("Google Auth failed:", err);
+    }
+  };
+
+
+  const handleAdminLogout = async () => {
+    sessionStorage.removeItem("admin_authorized");
+    setPasscodeAuthorized(false);
+    if (user) {
+      try {
+        await logout();
+      } catch (err) {
+        console.error("Logout error:", err);
+      }
+    }
+  };
 
   if (!mounted) {
     return (
@@ -32,26 +76,112 @@ export default function AdminDashboard() {
     );
   }
 
-  // Calculate Statistics
-  const totalOrders = localOrders.length;
-  const activeOrders = localOrders.filter(
-    (o) => o.status === "preparing" || o.status === "delivering"
+  // If not authorized via either Google Auth OR the passcode, show premium login screen
+  if (!user && !passcodeAuthorized) {
+    return (
+      <div className="min-h-screen bg-surface-dark text-white font-arabic p-6 flex flex-col justify-center items-center relative overflow-hidden">
+        {/* Background glow effects */}
+        <div className="absolute top-[-20%] left-[-20%] w-[600px] h-[600px] rounded-full bg-brand-red/10 blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-20%] w-[600px] h-[600px] rounded-full bg-brand-orange/10 blur-[150px] pointer-events-none" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md glass-card p-8 rounded-3xl border border-white/10 shadow-2xl relative z-10 space-y-8"
+        >
+          {/* Logo / Header */}
+          <div className="text-center space-y-3">
+            <span className="text-5xl block animate-pulse">🔥</span>
+            <h2 className="text-2xl font-black">لوحة تحكم الإدارة</h2>
+            <p className="text-white/40 text-xs sm:text-sm">
+              يرجى تسجيل الدخول أو إدخال رمز المرور السريع للوصول إلى لوحة التحكم
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handlePasscodeSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs text-white/50 font-bold block text-right">رمز المرور السريع (Passcode)</label>
+              <input
+                type="password"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                placeholder="أدخل رمز المرور (مثال: 1234)"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white text-sm text-center tracking-widest focus:outline-none focus:border-brand-orange transition-colors"
+                required
+                autoFocus
+              />
+            </div>
+
+            {showError && (
+              <p className="text-brand-red text-xs text-center font-bold">
+                ⚠️ رمز المرور غير صحيح! حاول مرة أخرى.
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3.5 bg-gradient-to-r from-brand-red to-brand-orange hover:brightness-110 text-white font-bold rounded-2xl text-sm transition-all active:scale-[0.98]"
+            >
+              دخول كمسؤول النظام
+            </button>
+          </form>
+
+          {isFirebaseEnabled && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-px bg-white/10 flex-1" />
+                <span className="text-[10px] text-white/30 uppercase tracking-widest">أو</span>
+                <div className="h-px bg-white/10 flex-1" />
+              </div>
+
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-2xl text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+              >
+                <span className="text-blue-400 font-bold">G</span>
+                <span>تسجيل الدخول بحساب Google</span>
+              </button>
+            </div>
+          )}
+
+          <div className="text-center">
+            <Link
+              href="/"
+              className="text-xs text-white/40 hover:text-white transition-colors"
+            >
+              ← عودة للصفحة الرئيسية
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Calculate Statistics using the single source of truth (orders from context)
+  const totalOrders = (orders || []).length;
+  const activeOrders = (orders || []).filter(
+    (o) => o && (o.status === "preparing" || o.status === "delivering")
   ).length;
-  const completedOrders = localOrders.filter((o) => o.status === "completed").length;
-  const totalSales = localOrders
-    .filter((o) => o.status === "completed")
-    .reduce((sum, o) => sum + o.subtotal, 0);
+  const completedOrders = (orders || []).filter((o) => o && o.status === "completed").length;
+  const totalSales = (orders || [])
+    .filter((o) => o && o.status === "completed")
+    .reduce((sum, o) => sum + (o.subtotal || 0), 0);
 
   // Dynamic Top Selling Item calculation
   const itemCounts: { [key: string]: { count: number; name: string } } = {};
-  localOrders.forEach((o) => {
-    o.items.forEach((item) => {
-      if (itemCounts[item.id]) {
-        itemCounts[item.id].count += item.quantity;
-      } else {
-        itemCounts[item.id] = { count: item.quantity, name: item.name };
-      }
-    });
+  (orders || []).forEach((o) => {
+    if (o && o.items) {
+      o.items.forEach((item) => {
+        if (item) {
+          if (itemCounts[item.id]) {
+            itemCounts[item.id].count += item.quantity || 0;
+          } else {
+            itemCounts[item.id] = { count: item.quantity || 0, name: item.name || "وجبة" };
+          }
+        }
+      });
+    }
   });
   let topItem = "لا توجد طلبات";
   let maxCount = 0;
@@ -63,13 +193,13 @@ export default function AdminDashboard() {
   });
 
   // Filtered orders list
-  const filteredOrders = localOrders.filter((order) => {
+  const filteredOrders = orders.filter((order) => {
     if (filterStatus === "all") return true;
     return order.status === filterStatus;
   });
 
-  // Simulate a random incoming order
-  const handleSimulateOrder = () => {
+  // Simulate a random incoming order using correct menu items and pricing
+  const handleSimulateOrder = async () => {
     const names = [
       "خالد العنسي",
       "فاطمة الريمي",
@@ -91,28 +221,28 @@ export default function AdminDashboard() {
       {
         id: "pizza",
         name: "بيتزا هوت سبايسي",
-        price: "1,500",
+        price: "3,000",
         quantity: Math.floor(Math.random() * 2) + 1,
-        image: "/images/pizza-base.png",
-        color: "#EF4444",
+        image: "/images/pizza.png",
+        color: "#FFD700",
         icon: "🍕",
       },
       {
         id: "shawarma",
         name: "شاورما عربي",
-        price: "1,200",
+        price: "1,500",
         quantity: Math.floor(Math.random() * 3) + 1,
         image: "/images/shawarma.png",
-        color: "#F59E0B",
+        color: "#E63946",
         icon: "🌯",
       },
       {
         id: "broast",
-        name: "بروست حار مقرمش",
-        price: "2,000",
+        name: "بروست مقرمش",
+        price: "1,200",
         quantity: 1,
         image: "/images/broast.png",
-        color: "#FB923C",
+        color: "#FF8C42",
         icon: "🍗",
       },
     ].slice(0, Math.floor(Math.random() * 3) + 1);
@@ -135,18 +265,23 @@ export default function AdminDashboard() {
       timestamp: new Date().toISOString(),
     };
 
-    // Save directly to localStorage to sync
-    const currentOrders = [newOrder, ...localOrders];
-    localStorage.setItem("hot_spicy_orders", JSON.stringify(currentOrders));
-    // Trigger state change
-    window.dispatchEvent(new Event("storage"));
-    setLocalOrders(currentOrders);
+    if (isFirebaseEnabled) {
+      try {
+        await placeOrderFirebase(newOrder);
+      } catch (err) {
+        console.error("Firebase simulation error:", err);
+      }
+    } else {
+      // Save directly to localStorage to sync locally
+      const currentOrders = [newOrder, ...orders];
+      localStorage.setItem("hot_spicy_orders", JSON.stringify(currentOrders));
+      window.dispatchEvent(new Event("storage"));
+    }
   };
 
   const handleClearOrders = () => {
     if (confirm("هل أنت متأكد من مسح جميع الطلبات؟")) {
       clearAllOrders();
-      setLocalOrders([]);
     }
   };
 
@@ -166,11 +301,16 @@ export default function AdminDashboard() {
                 لوحة تحكم الطلبات
               </h1>
             </div>
-            <p className="text-white/40 text-xs sm:text-sm mt-1.5">
-              مراقبة وتحديث وجبات العملاء الساخنة في الوقت الفعلي
-            </p>
+            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+              <p className="text-white/40 text-xs sm:text-sm">
+                مراقبة وتحديث وجبات العملاء الساخنة في الوقت الفعلي |
+              </p>
+              <span className="bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] text-brand-orange font-bold">
+                {user ? `متصل: ${user.name}` : "متصل بالرمز السريع"}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleSimulateOrder}
               className="px-5 py-2.5 bg-gradient-to-r from-brand-red to-brand-orange hover:brightness-110 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-lg shadow-brand-red/10 active:scale-[0.98] flex items-center gap-1.5"
@@ -183,6 +323,12 @@ export default function AdminDashboard() {
               className="px-5 py-2.5 bg-white/5 hover:bg-brand-red/20 hover:text-brand-red border border-white/10 hover:border-brand-red/30 text-white/70 font-bold text-xs sm:text-sm rounded-xl transition-all active:scale-[0.98]"
             >
               مسح السجل
+            </button>
+            <button
+              onClick={handleAdminLogout}
+              className="px-5 py-2.5 bg-brand-red/10 hover:bg-brand-red/20 text-brand-red border border-brand-red/20 font-bold text-xs sm:text-sm rounded-xl transition-all active:scale-[0.98]"
+            >
+              خروج الأمان
             </button>
             <Link
               href="/"
@@ -268,7 +414,7 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap items-center justify-between gap-4 bg-white/5 border border-white/5 p-4 rounded-2xl">
             <div className="flex items-center gap-2">
               <span className="text-white/40 text-xs font-bold">تصفية حسب الحالة:</span>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {[
                   { value: "all", label: "الكل" },
                   { value: "preparing", label: "تحت التحضير 🍳" },
@@ -291,7 +437,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="text-xs text-white/30">
-              يعرض {filteredOrders.length} من أصل {localOrders.length} طلبات
+              يعرض {filteredOrders.length} من أصل {orders.length} طلبات
             </div>
           </div>
 
@@ -367,16 +513,16 @@ export default function AdminDashboard() {
 
                     {/* Order items details */}
                     <div className="space-y-2 border-y border-white/5 py-4">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center text-sm">
+                      {order.items?.map((item) => (
+                        <div key={item?.id} className="flex justify-between items-center text-sm">
                           <div className="flex items-center gap-2">
-                            <span>{item.icon}</span>
-                            <span className="text-white/80">{item.name}</span>
-                            <span className="text-white/30 text-xs">x {item.quantity}</span>
+                            <span>{item?.icon}</span>
+                            <span className="text-white/80">{item?.name}</span>
+                            <span className="text-white/30 text-xs">x {item?.quantity}</span>
                           </div>
                           <span className="text-brand-orange font-bold text-xs font-arabic">
                             {new Intl.NumberFormat().format(
-                              parseInt(item.price.replace(/,/g, ""), 10) * item.quantity
+                              parseInt((item?.price || "0").replace(/,/g, ""), 10) * (item?.quantity || 0)
                             )}{" "}
                             ريال
                           </span>
@@ -385,9 +531,9 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Actions and status toggles */}
-                    <div className="flex items-center justify-between gap-4 pt-2">
+                    <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
                       <div>
-                        <span className="text-white/40 text-[10px] block">المبلغ الإجمالي</span>
+                        <span className="text-white/40 text-[10px] block text-right">المبلغ الإجمالي</span>
                         <span className="text-white font-black text-lg font-arabic">
                           {new Intl.NumberFormat().format(order.subtotal)} ريال
                         </span>

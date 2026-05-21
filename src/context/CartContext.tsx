@@ -7,6 +7,7 @@ import {
   isFirebaseEnabled,
   loginWithGoogleFirebase,
   logoutFirebase,
+  loginAnonymouslyFirebase,
   placeOrderFirebase,
   updateOrderStatusFirebase,
   clearAllOrdersFirebase,
@@ -42,19 +43,20 @@ interface CartContextType {
   cart: CartItem[];
   user: GoogleUser | null;
   orders: Order[];
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
+  addToCart: (item: Omit<CartItem, "quantity">, qty?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
-  loginWithGoogle: (email: string, name: string, picture: string) => void;
-  logout: () => void;
+  loginWithGoogle: (email: string, name: string, picture: string) => Promise<void>;
+  loginAnonymously: () => Promise<void>;
+  logout: () => Promise<void>;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   isOrdersOpen: boolean;
   setIsOrdersOpen: (open: boolean) => void;
-  placeOrder: () => void;
-  updateOrderStatus: (id: string, status: Order["status"]) => void;
-  clearAllOrders: () => void;
+  placeOrder: () => Promise<void>;
+  updateOrderStatus: (id: string, status: Order["status"]) => Promise<void>;
+  clearAllOrders: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -67,57 +69,53 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load cart, user, and orders from localStorage or Firebase on mount
+  // Load cart and check Auth state on mount
   useEffect(() => {
+    // Load only cart from localStorage
+    const savedCart = localStorage.getItem("hot_spicy_cart");
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     if (isFirebaseEnabled) {
       // Firebase Auth state listener
       let unsubscribeAuth = () => {};
       if (auth) {
         unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
           if (firebaseUser) {
-            setUser({
-              name: firebaseUser.displayName || "مستخدم جديد",
-              email: firebaseUser.email || "",
-              picture: firebaseUser.displayName ? firebaseUser.displayName.charAt(0) : "U",
-            });
+            if (firebaseUser.isAnonymous) {
+              setUser({
+                name: "مشرف النظام",
+                email: "admin@hotspicy.com",
+                picture: "A",
+              });
+            } else {
+              setUser({
+                name: firebaseUser.displayName || "مستخدم جديد",
+                email: firebaseUser.email || "",
+                picture: firebaseUser.displayName ? firebaseUser.displayName.charAt(0) : "U",
+              });
+            }
           } else {
             setUser(null);
           }
+          setIsLoaded(true);
         });
+      } else {
+        setIsLoaded(true);
       }
-      
-      // Firestore orders subscription listener
-      const unsubscribeOrders = subscribeToOrdersFirebase((updatedOrders) => {
-        setOrders(updatedOrders);
-      });
-
-      // Load only cart from localStorage
-      const savedCart = localStorage.getItem("hot_spicy_cart");
-      if (savedCart) {
-        try {
-          setCart(JSON.parse(savedCart));
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      setIsLoaded(true);
 
       return () => {
         unsubscribeAuth();
-        unsubscribeOrders();
       };
     } else {
       // LocalStorage Fallback logic
-      const savedCart = localStorage.getItem("hot_spicy_cart");
       const savedUser = localStorage.getItem("hot_spicy_user");
       const savedOrders = localStorage.getItem("hot_spicy_orders");
-      if (savedCart) {
-        try {
-          setCart(JSON.parse(savedCart));
-        } catch (e) {
-          console.error(e);
-        }
-      }
       if (savedUser) {
         try {
           setUser(JSON.parse(savedUser));
@@ -135,6 +133,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setIsLoaded(true);
     }
   }, []);
+
+  // Real-time Firestore Subscription (triggers only when user changes to avoid Permission Denied errors on load)
+  useEffect(() => {
+    if (!isFirebaseEnabled) return;
+
+    if (user) {
+      const unsubscribe = subscribeToOrdersFirebase((updatedOrders) => {
+        setOrders(updatedOrders);
+      }, user.email);
+
+      return () => {
+        unsubscribe();
+      };
+    } else {
+      setOrders([]);
+    }
+  }, [user]);
 
   // Sync state when localStorage changes in other tabs (only if Firebase is disabled)
   useEffect(() => {
@@ -191,17 +206,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("hot_spicy_orders", JSON.stringify(orders));
   }, [orders, isLoaded]);
 
-  const addToCart = (newItem: Omit<CartItem, "quantity">) => {
+  const addToCart = (newItem: Omit<CartItem, "quantity">, qty: number = 1) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === newItem.id);
       if (existingItem) {
         return prevCart.map((item) =>
           item.id === newItem.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + qty }
             : item
         );
       }
-      return [...prevCart, { ...newItem, quantity: 1 }];
+      return [...prevCart, { ...newItem, quantity: qty }];
     });
   };
 
@@ -227,17 +242,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithGoogle = async (email: string, name: string, picture: string) => {
     if (isFirebaseEnabled) {
-      try {
-        const firebaseUser = await loginWithGoogleFirebase();
-        setUser(firebaseUser);
-      } catch (err) {
-        console.error("Firebase Login Error, falling back:", err);
-        setUser({ email, name, picture });
-      }
+      const firebaseUser = await loginWithGoogleFirebase();
+      setUser(firebaseUser);
     } else {
       setUser({ email, name, picture });
     }
   };
+
+  const loginAnonymously = async () => {
+    if (isFirebaseEnabled) {
+      const firebaseUser = await loginAnonymouslyFirebase();
+      setUser(firebaseUser);
+    } else {
+      setUser({
+        name: "مشرف النظام",
+        email: "admin@hotspicy.com",
+        picture: "A",
+      });
+    }
+  };
+
 
   const logout = async () => {
     if (isFirebaseEnabled) {
@@ -262,16 +286,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     };
 
     if (isFirebaseEnabled) {
-      try {
-        await placeOrderFirebase(newOrder);
-      } catch (err) {
-        console.error("Firebase placeOrder Error, falling back to local:", err);
-        setOrders((prev) => [newOrder, ...prev]);
-      }
+      await placeOrderFirebase(newOrder);
     } else {
       setOrders((prev) => [newOrder, ...prev]);
     }
   };
+
 
   const updateOrderStatus = async (id: string, status: Order["status"]) => {
     if (isFirebaseEnabled) {
@@ -318,6 +338,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         clearCart,
         loginWithGoogle,
+        loginAnonymously,
         logout,
         isCartOpen,
         setIsCartOpen,

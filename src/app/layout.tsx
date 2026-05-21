@@ -3,6 +3,7 @@ import { Inter, Outfit, Cairo } from "next/font/google";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/ui/CartDrawer";
 import OrderHistoryDrawer from "@/components/ui/OrderHistoryDrawer";
+import LiveNotificationListener from "@/components/ui/LiveNotificationListener";
 import "./globals.css";
 
 const inter = Inter({
@@ -61,6 +62,7 @@ export default function RootLayout({
           {children}
           <CartDrawer />
           <OrderHistoryDrawer />
+          <LiveNotificationListener />
         </CartProvider>
       </body>
     </html>

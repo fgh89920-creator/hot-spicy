@@ -21,7 +21,38 @@ export default function CartDrawer() {
   } = useCart();
 
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "processing" | "success">("idle");
+  const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
+
+  // Two-way safeguard:
+  // - When drawer OPENS: if a stale "success" state exists from a previous order, clear it
+  //   immediately so the user sees fresh cart items (not the old success screen).
+  //   Never touch "processing" so we don't cancel an ongoing checkout.
+  // - When drawer CLOSES: reset everything after the exit animation (400ms).
+  React.useEffect(() => {
+    if (isCartOpen) {
+      // Only clear stale "success" - leave "processing" untouched
+      setCheckoutStatus((prev) => (prev === "success" ? "idle" : prev));
+      setIsAuthOpen(false);
+    } else {
+      const t = setTimeout(() => {
+        setCheckoutStatus("idle");
+        setIsAuthOpen(false);
+      }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [isCartOpen]);
+
+  // Reset checkout status to idle whenever a new item is added to the cart
+  React.useEffect(() => {
+    if (cart.length > 0) {
+      setCheckoutStatus("idle");
+    }
+  }, [cart.length]);
+
+
+
+
+
 
   const subtotal = cart.reduce((total, item) => {
     const priceNum = parseInt(item.price.replace(/,/g, ""), 10);
@@ -30,52 +61,60 @@ export default function CartDrawer() {
 
   const formattedSubtotal = new Intl.NumberFormat().format(subtotal);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!user) {
       setIsAuthOpen(true);
       return;
     }
     // Already logged in, process order
     setCheckoutStatus("processing");
-    setTimeout(() => {
-      placeOrder();
+    try {
+      await placeOrder();
       setCheckoutStatus("success");
       clearCart();
-    }, 2500);
+    } catch (err) {
+      console.error("Checkout error:", err);
+      setCheckoutStatus("error");
+    }
   };
 
-  const handleAuthSuccess = () => {
-    // Auth successful, immediately trigger checkout processing
+  const handleAuthSuccess = async () => {
+    // Auth successful — close auth modal first, then process order
+    setIsAuthOpen(false);
     setCheckoutStatus("processing");
-    setTimeout(() => {
-      placeOrder();
+    try {
+      await placeOrder();
       setCheckoutStatus("success");
       clearCart();
-    }, 2500);
+    } catch (err) {
+      console.error("Auth checkout error:", err);
+      setCheckoutStatus("error");
+    }
   };
+
 
   return (
     <>
       <AnimatePresence>
         {isCartOpen && (
-          <div className="fixed inset-0 z-40 overflow-hidden font-arabic">
+          <div className="fixed inset-0 z-40 overflow-hidden font-arabic pointer-events-none">
             {/* Backdrop overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsCartOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
             />
 
             {/* Drawer container */}
-            <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="absolute inset-y-0 right-0 max-w-full flex pl-10 pointer-events-none">
               <motion.div
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "tween", duration: 0.35 }}
-                className="w-screen max-w-md bg-surface-dark/95 border-l border-white/5 shadow-2xl backdrop-blur-2xl flex flex-col"
+                className="w-screen max-w-md bg-surface-dark/95 border-l border-white/5 shadow-2xl backdrop-blur-2xl flex flex-col pointer-events-auto"
               >
                 {/* Header */}
                 <div className="p-6 border-b border-white/5 flex items-center justify-between">
@@ -181,6 +220,39 @@ export default function CartDrawer() {
                           className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm rounded-xl transition-all"
                         >
                           متابعة التصفح
+                        </button>
+                      </div>
+                    </div>
+                  ) : checkoutStatus === "error" ? (
+                    /* Checkout Error State */
+                    <div className="h-full flex flex-col items-center justify-center text-center gap-6 py-12">
+                      <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="w-20 h-20 rounded-full bg-brand-red/20 border border-brand-red/30 flex items-center justify-center text-4xl shadow-xl shadow-brand-red/10 animate-bounce"
+                      >
+                        ❌
+                      </motion.div>
+                      <div>
+                        <h4 className="text-white text-xl font-bold">فشل إرسال الطلب!</h4>
+                        <p className="text-white/50 text-sm mt-2 leading-relaxed px-4 font-arabic">
+                          حدث خطأ أثناء الاتصال بالخادم ولم نتمكن من إيصال طلبك للمطبخ. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2 w-full px-6">
+                        <button
+                          onClick={handleCheckout}
+                          className="w-full py-3 bg-gradient-to-r from-brand-red to-brand-orange text-white font-bold text-sm rounded-xl transition-all"
+                        >
+                          إعادة المحاولة 🔄
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCheckoutStatus("idle");
+                          }}
+                          className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm rounded-xl transition-all"
+                        >
+                          العودة للسلة
                         </button>
                       </div>
                     </div>

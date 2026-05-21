@@ -19,7 +19,12 @@ export default function OrderHistoryDrawer() {
 
   // Filter orders for the current user
   const userOrders = user
-    ? orders.filter((order) => order.user.email.toLowerCase() === user.email.toLowerCase())
+    ? (orders || []).filter(
+        (order) =>
+          order?.user?.email &&
+          user?.email &&
+          order.user.email.toLowerCase() === user.email.toLowerCase()
+      )
     : [];
 
   const toggleExpandOrder = (id: string) => {
@@ -76,24 +81,24 @@ export default function OrderHistoryDrawer() {
     <>
       <AnimatePresence>
         {isOrdersOpen && (
-          <div className="fixed inset-0 z-40 overflow-hidden font-arabic">
+          <div className="fixed inset-0 z-40 overflow-hidden font-arabic pointer-events-none">
             {/* Backdrop overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOrdersOpen(false)}
-              className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/75 backdrop-blur-sm pointer-events-auto"
             />
 
             {/* Drawer container */}
-            <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="absolute inset-y-0 right-0 max-w-full flex pl-10 pointer-events-none">
               <motion.div
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "tween", duration: 0.35 }}
-                className="w-screen max-w-md bg-surface-dark/95 border-l border-white/5 shadow-2xl backdrop-blur-2xl flex flex-col"
+                className="w-screen max-w-md bg-surface-dark/95 border-l border-white/5 shadow-2xl backdrop-blur-2xl flex flex-col pointer-events-auto"
               >
                 {/* Header */}
                 <div className="p-6 border-b border-white/5 flex items-center justify-between">
@@ -263,15 +268,15 @@ export default function OrderHistoryDrawer() {
                                     {/* Items List */}
                                     <div className="space-y-2 border-t border-white/5 pt-3">
                                       <p className="text-[11px] text-white/40 font-semibold">تفاصيل الوجبات:</p>
-                                      {order.items.map((item) => (
-                                        <div key={item.id} className="flex items-center justify-between text-xs p-1">
+                                      {order.items?.map((item) => (
+                                        <div key={item?.id} className="flex items-center justify-between text-xs p-1">
                                           <div className="flex items-center gap-2">
                                             <span className="text-[10px] bg-white/5 px-1.5 py-0.5 rounded text-white/60">
-                                              {item.quantity}x
+                                              {item?.quantity}x
                                             </span>
-                                            <span className="text-white/80">{item.name}</span>
+                                            <span className="text-white/80">{item?.name}</span>
                                           </div>
-                                          <span className="text-white/50">{item.price} ريال</span>
+                                          <span className="text-white/50">{item?.price} ريال</span>
                                         </div>
                                       ))}
                                     </div>

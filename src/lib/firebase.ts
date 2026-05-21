@@ -4,7 +4,8 @@ import {
   signInWithPopup, 
   GoogleAuthProvider, 
   signOut, 
-  Auth
+  Auth,
+  signInAnonymously
 } from "firebase/auth";
 import { 
   getFirestore, 
@@ -14,6 +15,7 @@ import {
   onSnapshot, 
   query, 
   orderBy, 
+  where,
   getDocs,
   deleteDoc,
   updateDoc,
@@ -70,6 +72,20 @@ export async function logoutFirebase() {
   }
 }
 
+// Anonymous Login Helper (for passcode authorized Admin)
+export async function loginAnonymouslyFirebase() {
+  if (!isFirebaseEnabled || !auth) {
+    throw new Error("Firebase is not initialized");
+  }
+  const result = await signInAnonymously(auth);
+  return {
+    name: "مشرف النظام",
+    email: "admin@hotspicy.com",
+    picture: "A",
+  };
+}
+
+
 // Place Order in Firestore
 export async function placeOrderFirebase(order: Order) {
   if (!isFirebaseEnabled || !db) {
@@ -99,19 +115,39 @@ export async function clearAllOrdersFirebase() {
   await Promise.all(deletePromises);
 }
 
-// Subscribe to Orders in Firestore
-export function subscribeToOrdersFirebase(onUpdate: (orders: Order[]) => void) {
+// Subscribe to Orders in Firestore (supports filtering for regular users and full view for admin)
+export function subscribeToOrdersFirebase(
+  onUpdate: (orders: Order[]) => void,
+  userEmail?: string | null
+) {
   if (!isFirebaseEnabled || !db) {
     return () => {};
   }
   const ordersCol = collection(db, "orders");
-  const q = query(ordersCol, orderBy("timestamp", "desc"));
+  
+  let q;
+  if (userEmail && userEmail !== "admin@hotspicy.com") {
+    // Normal user: filter to only their orders.
+    // We sort in-memory to avoid needing a custom composite index in Firestore dashboard
+    q = query(ordersCol, where("user.email", "==", userEmail));
+  } else {
+    // Admin: retrieve all orders
+    q = query(ordersCol, orderBy("timestamp", "desc"));
+  }
   
   return onSnapshot(q, (snapshot) => {
     const orders: Order[] = [];
     snapshot.forEach((doc) => {
       orders.push(doc.data() as Order);
     });
+    // In-memory sorting for user-specific query
+    if (userEmail && userEmail !== "admin@hotspicy.com") {
+      orders.sort((a, b) => {
+        const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return timeB - timeA;
+      });
+    }
     onUpdate(orders);
   }, (error) => {
     console.error("Firestore subscription error:", error);

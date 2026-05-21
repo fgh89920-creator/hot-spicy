@@ -90,10 +90,12 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
   const active = variants.find((v) => v.id === activeId)!;
   const { addToCart, setIsCartOpen } = useCart();
   const [toast, setToast] = useState<{ show: boolean; name: string } | null>(null);
+  const [qty, setQty] = useState(1);
 
   const handleSelect = (variant: ProductVariant) => {
     setActiveId(variant.id);
     onVariantChange(variant.color, variant.image);
+    setQty(1); // reset quantity when switching variant
   };
 
   const handleAddToOrder = () => {
@@ -104,8 +106,9 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
       image: active.image,
       color: active.color,
       icon: active.icon,
-    });
+    }, qty);
     setToast({ show: true, name: active.name });
+    setQty(1); // reset qty after adding
     setTimeout(() => {
       setToast(null);
     }, 3000);
@@ -306,7 +309,7 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
                     </div>
 
                     {/* Price + CTA */}
-                    <div className="flex items-center gap-6 pt-4">
+                    <div className="flex flex-col gap-4 pt-4">
                       <div>
                         <span className="text-white/30 text-sm font-arabic">
                           يبدأ من
@@ -321,17 +324,58 @@ export default function ProductBuilder({ onVariantChange }: ProductBuilderProps)
                           </span>
                         </p>
                       </div>
-                      <motion.button
-                        onClick={handleAddToOrder}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-8 py-3 rounded-full font-bold text-white text-sm transition-all duration-300 font-arabic"
-                        style={{
-                          background: `linear-gradient(135deg, ${active.color}, ${active.color}99)`,
-                        }}
-                      >
-                        أضف للطلب
-                      </motion.button>
+
+                      {/* Quantity Selector + Add Button */}
+                      <div className="flex items-center gap-3">
+                        {/* - button */}
+                        <button
+                          onClick={() => setQty((q) => Math.max(1, q - 1))}
+                          className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-200 border"
+                          style={{
+                            borderColor: `${active.color}50`,
+                            color: active.color,
+                            backgroundColor: `${active.color}10`,
+                          }}
+                          aria-label="تقليل الكمية"
+                        >
+                          −
+                        </button>
+
+                        {/* Quantity display */}
+                        <span
+                          className="font-display text-2xl font-black w-8 text-center"
+                          style={{ color: active.color }}
+                        >
+                          {qty}
+                        </span>
+
+                        {/* + button */}
+                        <button
+                          onClick={() => setQty((q) => Math.min(20, q + 1))}
+                          className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-200 border"
+                          style={{
+                            borderColor: `${active.color}50`,
+                            color: active.color,
+                            backgroundColor: `${active.color}10`,
+                          }}
+                          aria-label="زيادة الكمية"
+                        >
+                          +
+                        </button>
+
+                        {/* Add to Order Button */}
+                        <motion.button
+                          onClick={handleAddToOrder}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="flex-1 py-3 rounded-full font-bold text-white text-sm transition-all duration-300 font-arabic"
+                          style={{
+                            background: `linear-gradient(135deg, ${active.color}, ${active.color}99)`,
+                          }}
+                        >
+                          أضف للطلب
+                        </motion.button>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
@@ -40,12 +40,17 @@ export default function ProductModel({
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
 
+    // Tilt target rotation based on mouse hover position
+    const targetX = state.pointer.y * 0.35;
+    const targetY = -state.pointer.x * 0.35;
+
     if (meshRef.current) {
-      // Gentle Z-axis rotation (rolling/spinning) and subtle X/Y swaying
-      // This keeps the 2D food sprite looking thick and dynamic instead of flattening
-      meshRef.current.rotation.z = Math.sin(t * 0.15) * 0.1;
-      meshRef.current.rotation.y = Math.sin(t * 0.3) * 0.15;
-      meshRef.current.rotation.x = Math.cos(t * 0.25) * 0.08;
+      // Smoothly lerp towards target rotation to follow cursor with fluid inertia
+      meshRef.current.rotation.x = THREE.MathUtils.lerp(meshRef.current.rotation.x, targetX, 0.08);
+      meshRef.current.rotation.y = THREE.MathUtils.lerp(meshRef.current.rotation.y, targetY, 0.08);
+      
+      // Keep subtle idle rolling on Z-axis
+      meshRef.current.rotation.z = Math.sin(t * 0.15) * 0.05;
 
       // Anti-gravity floating effect
       meshRef.current.position.y =
@@ -131,13 +136,28 @@ function OrbitRing({ color }: { color: string }) {
     }
   });
 
+  // Optimize: Instantiate single geometry and material to reuse across all instances
+  const geom = useMemo(() => new THREE.SphereGeometry(1, 8, 8), []);
+  const mat = useMemo(() => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.6 }), [color]);
+
+  // Clean up WebGL resources on unmount
+  useEffect(() => {
+    return () => {
+      geom.dispose();
+      mat.dispose();
+    };
+  }, [geom, mat]);
+
   return (
     <group ref={groupRef}>
       {particles.map((p, i) => (
-        <mesh key={i} position={p.position} scale={p.scale}>
-          <sphereGeometry args={[1, 8, 8]} />
-          <meshBasicMaterial color={color} transparent opacity={0.6} />
-        </mesh>
+        <mesh
+          key={i}
+          position={p.position}
+          scale={p.scale}
+          geometry={geom}
+          material={mat}
+        />
       ))}
     </group>
   );
