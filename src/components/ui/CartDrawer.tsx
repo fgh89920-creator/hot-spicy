@@ -21,7 +21,9 @@ export default function CartDrawer() {
   } = useCart();
 
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
+  const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "details" | "processing" | "success" | "error">("idle");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
 
   // Two-way safeguard:
   // - When drawer OPENS: if a stale "success" state exists from a previous order, clear it
@@ -61,15 +63,22 @@ export default function CartDrawer() {
 
   const formattedSubtotal = new Intl.NumberFormat().format(subtotal);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user) {
       setIsAuthOpen(true);
       return;
     }
-    // Already logged in, process order
+    // Proceed to details form
+    setCheckoutStatus("details");
+  };
+
+  const submitOrderDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone.trim() || !address.trim()) return;
+
     setCheckoutStatus("processing");
     try {
-      await placeOrder();
+      await placeOrder(phone, address);
       setCheckoutStatus("success");
       clearCart();
     } catch (err) {
@@ -78,18 +87,10 @@ export default function CartDrawer() {
     }
   };
 
-  const handleAuthSuccess = async () => {
-    // Auth successful — close auth modal first, then process order
+  const handleAuthSuccess = () => {
+    // Auth successful — close auth modal first, then go to details
     setIsAuthOpen(false);
-    setCheckoutStatus("processing");
-    try {
-      await placeOrder();
-      setCheckoutStatus("success");
-      clearCart();
-    } catch (err) {
-      console.error("Auth checkout error:", err);
-      setCheckoutStatus("error");
-    }
+    setCheckoutStatus("details");
   };
 
 
@@ -173,7 +174,53 @@ export default function CartDrawer() {
 
                 {/* Main Content Area */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  {checkoutStatus === "processing" ? (
+                  {checkoutStatus === "details" ? (
+                    /* Checkout Details Form */
+                    <div className="h-full flex flex-col pt-4">
+                      <h4 className="text-white text-lg font-bold mb-2">تفاصيل التوصيل</h4>
+                      <p className="text-white/40 text-xs mb-6">يرجى إدخال معلومات التواصل والوجهة لتوصيل طلبك.</p>
+                      <form onSubmit={submitOrderDetails} className="space-y-4 flex-1">
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-white/50 font-bold block text-right">رقم الهاتف للتواصل</label>
+                          <input
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="مثال: 771234567"
+                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white text-sm focus:outline-none focus:border-brand-orange transition-colors text-right"
+                            required
+                            autoFocus
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-white/50 font-bold block text-right">عنوان التوصيل أو الحي</label>
+                          <input
+                            type="text"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="مثال: حدة، شارع صفر، بجوار..."
+                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white text-sm focus:outline-none focus:border-brand-orange transition-colors text-right"
+                            required
+                          />
+                        </div>
+                        <div className="pt-6">
+                          <button
+                            type="submit"
+                            className="w-full py-4 bg-gradient-to-r from-brand-red to-brand-orange hover:brightness-110 text-white font-bold rounded-2xl text-sm transition-all active:scale-[0.98] shadow-xl"
+                          >
+                            إرسال الطلب للمطبخ الآن 🔥
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCheckoutStatus("idle")}
+                            className="w-full py-3 mt-2 bg-transparent text-white/40 hover:text-white text-xs font-bold rounded-2xl transition-all"
+                          >
+                            تراجع عن الإرسال
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  ) : checkoutStatus === "processing" ? (
                     /* Checkout Processing State */
                     <div className="h-full flex flex-col items-center justify-center text-center gap-6 py-12">
                       <div className="relative">

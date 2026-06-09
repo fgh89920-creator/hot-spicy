@@ -267,6 +267,14 @@ export default function OrderHistoryDrawer() {
 
                                     {/* Items List */}
                                     <div className="space-y-2 border-t border-white/5 pt-3">
+                                      <p className="text-[11px] text-white/40 font-semibold">تفاصيل التوصيل:</p>
+                                      <div className="flex flex-col gap-1 text-[11px]">
+                                        <p className="text-white/80"><span className="text-white/40 ml-1">العنوان:</span> {order.address || "غير محدد"}</p>
+                                        <p className="text-white/80"><span className="text-white/40 ml-1">الهاتف:</span> <span dir="ltr">{order.phone || "غير محدد"}</span></p>
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-2 border-t border-white/5 pt-3">
                                       <p className="text-[11px] text-white/40 font-semibold">تفاصيل الوجبات:</p>
                                       {order.items?.map((item) => (
                                         <div key={item?.id} className="flex items-center justify-between text-xs p-1">

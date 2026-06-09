@@ -550,6 +550,13 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
+                    {/* Delivery details */}
+                    <div className="space-y-1 bg-white/5 p-3 rounded-xl border border-white/5">
+                      <p className="text-[11px] text-white/40 font-semibold mb-1">بيانات التوصيل:</p>
+                      <p className="text-white/80 text-xs truncate"><span className="text-white/40 ml-1">العنوان:</span> {order.address || "غير محدد"}</p>
+                      <p className="text-white/80 text-xs"><span className="text-white/40 ml-1">الهاتف:</span> <span dir="ltr">{order.phone || "غير محدد"}</span></p>
+                    </div>
+
                     {/* Order items details */}
                     <div className="space-y-2 border-y border-white/5 py-4">
                       {order.items?.map((item) => (

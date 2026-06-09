@@ -37,6 +37,8 @@ export interface Order {
   subtotal: number;
   status: "preparing" | "delivering" | "completed" | "cancelled";
   timestamp: string;
+  phone?: string;
+  address?: string;
 }
 
 interface CartContextType {
@@ -54,7 +56,7 @@ interface CartContextType {
   setIsCartOpen: (open: boolean) => void;
   isOrdersOpen: boolean;
   setIsOrdersOpen: (open: boolean) => void;
-  placeOrder: () => Promise<void>;
+  placeOrder: (phone?: string, address?: string) => Promise<void>;
   updateOrderStatus: (id: string, status: Order["status"]) => Promise<void>;
   clearAllOrders: () => Promise<void>;
 }
@@ -281,7 +283,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  const placeOrder = async () => {
+  const placeOrder = async (phone?: string, address?: string) => {
     if (!user || cart.length === 0) return;
     const subtotal = cart.reduce((total, item) => {
       const priceNum = parseInt(item.price.replace(/,/g, ""), 10);
@@ -294,6 +296,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       subtotal: subtotal,
       status: "preparing",
       timestamp: new Date().toISOString(),
+      phone: phone || "",
+      address: address || "",
     };
 
     if (isFirebaseEnabled) {
