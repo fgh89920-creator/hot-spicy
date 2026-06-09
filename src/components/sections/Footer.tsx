@@ -3,62 +3,61 @@
 import { motion } from "framer-motion";
 
 const footerLinks = {
-  menu: [
-    { label: "Shawarma", href: "#" },
-    { label: "Broast", href: "#" },
-    { label: "Pizza", href: "#" },
-    { label: "Burgers", href: "#" },
-    { label: "Fresh Juices", href: "#" },
+  "قائمة الطعام": [
+    { label: "شاورما", href: "#showcase" },
+    { label: "بروست", href: "#showcase" },
+    { label: "بيتزا", href: "#showcase" },
+    { label: "برجر", href: "#builder" },
+    { label: "عصائر طازجة", href: "#builder" },
   ],
-  company: [
-    { label: "About Us", href: "#" },
-    { label: "Our Story", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Press", href: "#" },
+  "الشركة": [
+    { label: "من نحن", href: "#about" },
+    { label: "قصتنا", href: "#about" },
+    { label: "الوظائف", href: "#" },
+    { label: "الصحافة", href: "#" },
   ],
-  support: [
-    { label: "Contact", href: "#" },
-    { label: "Delivery", href: "#" },
-    { label: "FAQ", href: "#" },
-    { label: "Feedback", href: "#" },
+  "الدعم والمساعدة": [
+    { label: "اتصل بنا", href: "#contact" },
+    { label: "خدمة التوصيل", href: "#" },
+    { label: "الأسئلة الشائعة", href: "#" },
+    { label: "الملاحظات", href: "#" },
   ],
 };
 
 export default function Footer() {
   return (
-    <footer id="contact" className="relative border-t border-white/5">
+    <footer id="contact" className="relative border-t border-white/5 font-arabic">
       {/* Top glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px bg-gradient-to-r from-transparent via-brand-red/50 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Brand column */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="lg:col-span-1 text-right">
+            <div className="flex items-center gap-3 mb-6 justify-start">
               <span className="text-3xl">🔥</span>
               <div>
                 <span className="font-display text-xl font-bold text-white">
-                  Hot <span className="text-gradient-brand">Spicy</span>
+                  هوت <span className="text-gradient-brand">سبايسي</span>
                 </span>
-                <p className="text-[10px] text-white/30 tracking-[0.3em] uppercase -mt-1">
-                  Fast Food
+                <p className="text-[10px] text-white/30 tracking-[0.1em] uppercase -mt-1 font-arabic">
+                  وجبات سريعة
                 </p>
               </div>
             </div>
-            <p className="text-white/40 text-sm leading-relaxed mb-6">
-              Crafted with fire & passion since day one. Premium fast food
-              experience in Sana&apos;a, Yemen.
+            <p className="text-white/40 text-sm leading-relaxed mb-6 font-arabic">
+              صُنع بالنار والشغف منذ اليوم الأول. تجربة وجبات سريعة فاخرة في صنعاء، اليمن.
             </p>
 
             {/* Contact info */}
-            <div className="space-y-2 text-sm text-white/30">
-              <p className="font-arabic">📍 صنعاء - الأصبحي - شارع 22 مايو</p>
-              <p>📞 01 620062</p>
-              <p>📱 776820068 - 770620062</p>
+            <div className="space-y-2 text-sm text-white/30 font-arabic">
+              <p>📍 صنعاء - الأصبحي - شارع 22 مايو</p>
+              <p dir="ltr" className="text-right">📞 01 620062</p>
+              <p dir="ltr" className="text-right">📱 776820068 - 770620062</p>
             </div>
 
             {/* Social icons */}
-            <div className="flex items-center gap-3 mt-6">
+            <div className="flex items-center gap-3 mt-6 justify-start">
               {["Facebook", "Instagram", "Twitter"].map((social) => (
                 <motion.a
                   key={social}
@@ -89,8 +88,8 @@ export default function Footer() {
 
           {/* Link columns */}
           {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title}>
-              <h4 className="font-display font-bold text-white text-sm uppercase tracking-wider mb-6">
+            <div key={title} className="text-right">
+              <h4 className="font-arabic font-bold text-white text-sm uppercase tracking-wider mb-6">
                 {title}
               </h4>
               <ul className="space-y-3">
@@ -98,7 +97,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-white/40 hover:text-white text-sm transition-colors duration-300"
+                      className="text-white/40 hover:text-white text-sm transition-colors duration-300 font-arabic"
                     >
                       {link.label}
                     </a>
@@ -112,8 +111,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-white/20 text-xs">
-            © {new Date().getFullYear()} Hot Spicy Fast Food. All rights
-            reserved.
+            © {new Date().getFullYear()} هوت سبايسي للوجبات السريعة. جميع الحقوق محفوظة.
           </p>
           <p className="text-white/20 text-xs font-arabic">
             @HotSpicy020 🔥

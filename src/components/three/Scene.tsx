@@ -13,6 +13,8 @@ import ProductModel from "./ProductModel";
 interface SceneProps {
   /** Current accent color from product selector */
   accentColor?: string;
+  /** Current active image path */
+  activeImage?: string;
   /** Scale multiplier for the model */
   modelScale?: number;
   /** Position override for the model */
@@ -25,6 +27,7 @@ interface SceneProps {
  */
 export default function Scene({
   accentColor = "#E63946",
+  activeImage = "/images/shawarma.png",
   modelScale = 1,
   modelPosition = [0, 0, 0],
 }: SceneProps) {
@@ -82,6 +85,7 @@ export default function Scene({
           >
             <ProductModel
               accentColor={accentColor}
+              activeImage={activeImage}
               scale={modelScale}
               position={modelPosition}
             />

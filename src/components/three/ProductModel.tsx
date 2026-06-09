@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
-import { MeshDistortMaterial } from "@react-three/drei";
+import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
 interface ProductModelProps {
   /** Active flavor color — drives material + emissive color */
   accentColor?: string;
+  /** Active image path to render */
+  activeImage?: string;
   /** Scale multiplier (controlled by GSAP ScrollTrigger) */
   scale?: number;
   /** Position override (controlled by GSAP ScrollTrigger) */
@@ -18,21 +20,9 @@ interface ProductModelProps {
   floatAmplitude?: number;
 }
 
-/**
- * 🔥 ProductModel — Placeholder 3D mesh for the Hot Spicy hero.
- *
- * SWAP WITH YOUR CUSTOM MODEL:
- * 1. Place your .glb file in /public/models/your-model.glb
- * 2. Replace the <mesh> below with:
- *
- *    import { useGLTF } from "@react-three/drei";
- *    const { scene } = useGLTF("/models/your-model.glb");
- *    return <primitive ref={meshRef} object={scene} scale={scale} />;
- *
- * 3. Add useGLTF.preload("/models/your-model.glb") at the bottom of the file.
- */
 export default function ProductModel({
   accentColor = "#E63946",
+  activeImage = "/images/shawarma.png",
   scale = 1,
   position = [0, 0, 0],
   rotationSpeed = 0.3,
@@ -41,16 +31,26 @@ export default function ProductModel({
   const meshRef = useRef<THREE.Mesh>(null!);
   const glowRef = useRef<THREE.Mesh>(null!);
 
+  // Load the food product texture dynamically (Suspended by the parent Suspense)
+  const texture = useTexture(activeImage);
+
   // Convert hex color string to Three.js Color for material
   const color = useMemo(() => new THREE.Color(accentColor), [accentColor]);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
 
+    // Tilt target rotation based on mouse hover position
+    const targetX = state.pointer.y * 0.35;
+    const targetY = -state.pointer.x * 0.35;
+
     if (meshRef.current) {
-      // Slow continuous rotation — "showcase spin"
-      meshRef.current.rotation.y += 0.003 * rotationSpeed;
-      meshRef.current.rotation.x = Math.sin(t * 0.3) * 0.05;
+      // Smoothly lerp towards target rotation to follow cursor with fluid inertia
+      meshRef.current.rotation.x = THREE.MathUtils.lerp(meshRef.current.rotation.x, targetX, 0.08);
+      meshRef.current.rotation.y = THREE.MathUtils.lerp(meshRef.current.rotation.y, targetY, 0.08);
+      
+      // Keep subtle idle rolling on Z-axis
+      meshRef.current.rotation.z = Math.sin(t * 0.15) * 0.05;
 
       // Anti-gravity floating effect
       meshRef.current.position.y =
@@ -79,32 +79,26 @@ export default function ProductModel({
         />
       </mesh>
 
-      {/* ─── Main product placeholder ─── */}
-      {/*
-        This is a stylized dodecahedron as a placeholder.
-        Replace with your .glb model (see instructions above).
-      */}
+      {/* ─── Main product visual (Textured Plane) ─── */}
       <mesh ref={meshRef} castShadow>
-        <dodecahedronGeometry args={[1.2, 0]} />
-        <MeshDistortMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={0.15}
+        <planeGeometry args={[2.8, 2.8]} />
+        <meshStandardMaterial
+          map={texture}
+          transparent
           roughness={0.2}
-          metalness={0.8}
-          distort={0.15}
-          speed={2}
-          envMapIntensity={1.5}
+          metalness={0.1}
+          side={THREE.DoubleSide}
+          depthWrite={true}
         />
       </mesh>
 
-      {/* ─── Inner core glow ─── */}
-      <mesh scale={0.6}>
+      {/* ─── Inner core glow / particle effect ─── */}
+      <mesh scale={0.8} position={[0, 0, -0.1]}>
         <icosahedronGeometry args={[1, 1]} />
         <meshBasicMaterial
           color={color}
           transparent
-          opacity={0.05}
+          opacity={0.03}
           wireframe
         />
       </mesh>
@@ -142,13 +136,28 @@ function OrbitRing({ color }: { color: string }) {
     }
   });
 
+  // Optimize: Instantiate single geometry and material to reuse across all instances
+  const geom = useMemo(() => new THREE.SphereGeometry(1, 8, 8), []);
+  const mat = useMemo(() => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.6 }), [color]);
+
+  // Clean up WebGL resources on unmount
+  useEffect(() => {
+    return () => {
+      geom.dispose();
+      mat.dispose();
+    };
+  }, [geom, mat]);
+
   return (
     <group ref={groupRef}>
       {particles.map((p, i) => (
-        <mesh key={i} position={p.position} scale={p.scale}>
-          <sphereGeometry args={[1, 8, 8]} />
-          <meshBasicMaterial color={color} transparent opacity={0.6} />
-        </mesh>
+        <mesh
+          key={i}
+          position={p.position}
+          scale={p.scale}
+          geometry={geom}
+          material={mat}
+        />
       ))}
     </group>
   );

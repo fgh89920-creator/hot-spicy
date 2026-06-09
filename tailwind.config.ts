@@ -26,8 +26,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-outfit)", "sans-serif"],
-        body: ["var(--font-inter)", "sans-serif"],
+        display: ["var(--font-cairo)", "var(--font-outfit)", "sans-serif"],
+        body: ["var(--font-cairo)", "var(--font-inter)", "sans-serif"],
         arabic: ["var(--font-cairo)", "sans-serif"],
       },
       animation: {

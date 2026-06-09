@@ -8,10 +8,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const stats = [
-  { value: "10K+", label: "Happy Customers", icon: "😍" },
-  { value: "50+", label: "Menu Items", icon: "🍽️" },
-  { value: "24/7", label: "Delivery Hours", icon: "🛵" },
-  { value: "4.9", label: "Rating", icon: "⭐" },
+  { value: "+10K", label: "عميل سعيد", icon: "😍" },
+  { value: "+50", label: "أصناف المنيو", icon: "🍽️" },
+  { value: "24/7", label: "خدمة التوصيل", icon: "🛵" },
+  { value: "4.9", label: "تقييم العملاء", icon: "⭐" },
 ];
 
 export default function AboutSection() {
@@ -64,22 +64,14 @@ export default function AboutSection() {
 
       <div className="max-w-7xl mx-auto px-6">
         <div className="about-content max-w-3xl mx-auto text-center mb-20">
-          <span className="inline-block text-sm font-semibold tracking-[0.3em] uppercase text-brand-red mb-4">
-            Our Story
+          <span className="inline-block text-sm font-semibold tracking-[0.15em] uppercase text-brand-red mb-4 font-arabic">
+            قصتنا
           </span>
           <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
-            Born From{" "}
-            <span className="text-gradient-fire">Fire</span>
+            ولدت من <span className="text-gradient-fire">النار</span>
           </h2>
-          <p className="mt-6 text-white/40 text-lg leading-relaxed">
-            What started as a small kitchen with a big dream has grown into
-            Sana&apos;a&apos;s most beloved fast food destination. We believe in bold
-            flavors, fresh ingredients, and the kind of spice that makes you
-            come back for more. Every recipe is crafted with passion and a
-            relentless pursuit of taste perfection.
-          </p>
-          <p className="mt-4 text-white/40 text-lg leading-relaxed font-arabic">
-            ما بدأ كمطبخ صغير بحلم كبير أصبح الوجهة المفضلة للوجبات السريعة في صنعاء
+          <p className="mt-6 text-white/40 text-lg leading-relaxed font-arabic">
+            ما بدأ كمطبخ صغير بحلم كبير أصبح اليوم الوجهة المفضلة لعشاق الوجبات السريعة في صنعاء. نحن نؤمن بالنكهات الجريئة، المكونات الطازجة، واللمسة الحارة التي تجعلك تعود لطلب المزيد. كل وصفة لدينا مصممة بشغف وسعي مستمر للوصول إلى المذاق المثالي.
           </p>
         </div>
 
@@ -97,7 +89,7 @@ export default function AboutSection() {
               <p className="font-display text-3xl lg:text-4xl font-black text-gradient-brand">
                 {stat.value}
               </p>
-              <p className="text-white/40 text-sm mt-2 tracking-wide">
+              <p className="text-white/40 text-sm mt-2 tracking-wide font-arabic">
                 {stat.label}
               </p>
             </motion.div>

@@ -6,6 +6,7 @@ import Navbar from "@/components/ui/Navbar";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import HeroSection from "@/components/sections/HeroSection";
 import ShowcaseSection from "@/components/sections/ShowcaseSection";
+import PizzaExplodedSection from "@/components/sections/PizzaExplodedSection";
 import ProductBuilder from "@/components/sections/ProductBuilder";
 import AboutSection from "@/components/sections/AboutSection";
 import Footer from "@/components/sections/Footer";
@@ -17,15 +18,16 @@ const Scene = dynamic(() => import("@/components/three/Scene"), {
 });
 
 export default function Home() {
-  // Accent color state — shared between ProductBuilder and 3D Scene
+  // Accent color and active image state — shared between ProductBuilder and 3D Scene
   const [accentColor, setAccentColor] = useState("#E63946");
+  const [activeImage, setActiveImage] = useState("/images/shawarma.png");
 
   return (
     <>
       <LoadingScreen />
 
       {/* ─── 3D Canvas (fixed behind content) ─── */}
-      <Scene accentColor={accentColor} />
+      <Scene accentColor={accentColor} activeImage={activeImage} />
 
       {/* ─── Ambient background glow (follows accent color) ─── */}
       <div
@@ -46,8 +48,16 @@ export default function Home() {
           {/* Section 2: Scroll-triggered product showcase */}
           <ShowcaseSection />
 
+          {/* Section 2.5: Interactive exploded pizza assembly */}
+          <PizzaExplodedSection />
+
           {/* Section 3: Interactive product builder / selector */}
-          <ProductBuilder onColorChange={setAccentColor} />
+          <ProductBuilder
+            onVariantChange={(color, image) => {
+              setAccentColor(color);
+              setActiveImage(image);
+            }}
+          />
 
           {/* Section 4: About / Stats */}
           <AboutSection />
@@ -58,3 +68,4 @@ export default function Home() {
     </>
   );
 }
+

@@ -34,8 +34,8 @@ export default function LoadingScreen() {
               transition={{ delay: 0.5 }}
               className="text-center"
             >
-              <p className="font-display text-2xl font-bold text-white">
-                Hot <span className="text-gradient-brand">Spicy</span>
+              <p className="font-display text-2xl font-bold text-white font-arabic">
+                هوت <span className="text-gradient-brand">سبايسي</span>
               </p>
               <motion.p
                 initial={{ width: 0 }}

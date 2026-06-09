@@ -183,6 +183,87 @@ body {
   }
 }
 
+/* ── Mobile Utilities ─────────────────────── */
+/* Hide scrollbar on mobile pill/tab bars */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area insets for notched phones */
+.safe-top    { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-x      { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+
+/* Minimum touch target (WCAG 2.5.5) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Prevent text size boost on mobile */
+@media (max-width: 768px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Reduce hero headings for small screens */
+  .hero-headline {
+    font-size: clamp(3.5rem, 14vw, 6rem);
+  }
+
+  /* Make section vertical padding more compact */
+  .section-py {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  /* Product builder pill bar needs horizontal scroll */
+  .variant-bar {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* ── Bottom Nav Bar (mobile-only) ─────────── */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 49;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 0.5rem 1rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  /* Add bottom padding to body so content is not hidden behind the nav */
+  body {
+    padding-bottom: 72px;
+  }
+}
+
 /* ── Loading screen ───────────────────────── */
 .loader-container {
   position: fixed;
@@ -205,3 +286,23 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Premium Focus States ─────────────────── */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--brand-orange) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 12px rgba(255, 140, 66, 0.4) !important;
+}
+

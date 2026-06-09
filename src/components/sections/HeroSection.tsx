@@ -56,12 +56,12 @@ export default function HeroSection() {
       />
 
       {/* Content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center w-full">
         {/* Badge */}
         <div ref={badgeRef} className="inline-flex items-center gap-2 mb-8 opacity-0">
           <div className="px-4 py-1.5 rounded-full glass-card border border-brand-red/20">
             <span className="text-xs font-semibold tracking-wider uppercase text-brand-red-light">
-              🔥 Crafted with Fire & Passion
+              🔥 صُنع بالنار والشغف
             </span>
           </div>
         </div>
@@ -69,10 +69,11 @@ export default function HeroSection() {
         {/* Main heading */}
         <h1
           ref={headingRef}
-          className="font-display text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.9] tracking-tighter opacity-0"
+          className="font-display font-black leading-[1.1] tracking-tight opacity-0"
+          style={{ fontSize: 'clamp(3rem, 14vw, 10rem)' }}
         >
-          <span className="block text-white">Taste The</span>
-          <span className="block text-gradient-fire mt-2">Heat</span>
+          <span className="block text-white">تذوّق طعم</span>
+          <span className="block text-gradient-fire mt-2">اللهب</span>
         </h1>
 
         {/* Subtitle */}
@@ -80,28 +81,26 @@ export default function HeroSection() {
           ref={subtitleRef}
           className="mt-8 text-lg sm:text-xl text-white/50 max-w-2xl mx-auto font-light leading-relaxed opacity-0"
         >
-          Premium fast food that ignites your senses. From our legendary{" "}
-          <span className="text-brand-orange font-medium">Shawarma</span> to
-          crispy{" "}
-          <span className="text-brand-gold font-medium">Broast</span> — every
-          bite is a flavor explosion.
+          وجبات سريعة فاخرة تشعل حواسك. من{" "}
+          <span className="text-brand-orange font-semibold">الشاورما الأسطورية</span> إلى{" "}
+          <span className="text-brand-gold font-semibold">البروست المقرمش</span> — كل قضمة هي انفجار من النكهات.
         </p>
 
         {/* CTA Buttons */}
-        <div ref={ctaRef} className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0">
+        <div ref={ctaRef} className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 opacity-0 px-2 sm:px-0">
           <motion.a
             href="#builder"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="group relative px-10 py-4 rounded-full text-white font-bold text-lg overflow-hidden"
+            className="group relative w-full sm:w-auto px-10 py-4 rounded-full text-white font-bold text-lg overflow-hidden"
           >
             <span className="absolute inset-0 bg-gradient-to-r from-brand-red via-brand-orange to-brand-gold" />
             <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-r from-brand-gold via-brand-orange to-brand-red" />
             <span className="absolute inset-[2px] bg-surface-dark rounded-full opacity-0 group-hover:opacity-0" />
             <span className="relative flex items-center gap-2">
-              Explore Menu
+              استكشف القائمة
               <svg
-                className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                className="w-5 h-5 group-hover:-translate-x-1 transition-transform rotate-180"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -120,11 +119,11 @@ export default function HeroSection() {
             href="#showcase"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="group px-10 py-4 rounded-full border border-white/10 text-white/70 hover:text-white hover:border-brand-red/40 font-medium text-lg transition-all duration-500"
+            className="group w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-white/70 hover:text-white hover:border-brand-red/40 font-medium text-lg transition-all duration-500"
           >
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-brand-red animate-pulse" />
-              Watch Story
+              شاهد قصتنا
             </span>
           </motion.a>
         </div>
@@ -142,7 +141,7 @@ export default function HeroSection() {
             className="flex flex-col items-center gap-2"
           >
             <span className="text-xs text-white/30 tracking-widest uppercase">
-              Scroll
+              مرر للأسفل
             </span>
             <div className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center p-1.5">
               <motion.div

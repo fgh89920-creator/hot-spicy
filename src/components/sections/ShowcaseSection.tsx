@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -9,31 +10,34 @@ gsap.registerPlugin(ScrollTrigger);
 
 const showcaseItems = [
   {
-    title: "Legendary Shawarma",
-    titleAr: "شاورما عربي",
+    title: "الشاورما الأسطورية",
+    titleAr: "Legendary Shawarma",
     description:
-      "Slow-roasted, thinly sliced, and wrapped to perfection. Our Arabic shawarma is marinated for 24 hours in a secret spice blend that delivers heat, depth, and irresistible flavor.",
+      "شاورما عربي مجهزة على نار هادئة، مقطعة بدقة وملفوفة بإتقان. تُنقع شاورما الدجاج الخاصة بنا لمدة 24 ساعة في مزيج بهارات سري يضفي عليها طعماً غنياً وحرارة لا تقاوم.",
     stat: "1500+",
-    statLabel: "Orders Daily",
+    statLabel: "طلب يومياً",
     accent: "#E63946",
+    image: "/images/shawarma.png",
   },
   {
-    title: "Crispy Broast",
-    titleAr: "بروست",
+    title: "البروست المقرمش",
+    titleAr: "Crispy Broast",
     description:
-      "Golden, crunchy on the outside — tender and juicy within. Pressure-cooked using our signature Hot Spicy technique for the ultimate crispy chicken experience.",
-    stat: "8",
-    statLabel: "Piece Family Packs",
+      "ذهبي ومقرمش من الخارج — طري ولذيذ من الداخل. مطهو تحت الضغط باستخدام تقنية هوت سبايسي الفريدة للحصول على أفضل تجربة دجاج مقرمش.",
+    stat: "8 قطع",
+    statLabel: "وجبات عائلية",
     accent: "#FF8C42",
+    image: "/images/broast.png",
   },
   {
-    title: "Gourmet Pizza",
-    titleAr: "بيتزا هوت سبايسي",
+    title: "بيتزا هوت سبايسي",
+    titleAr: "Gourmet Pizza",
     description:
-      "Hand-tossed dough, premium toppings, and our fiery Hot Spicy sauce. From classic Margherita to our signature Hot Spicy Pizza loaded with pepperoni and jalapenos.",
-    stat: "3000",
-    statLabel: "Per Large Pizza",
+      "عجينة محضرة يدوياً، وإضافات فاخرة، مع صلصة هوت سبايسي الحارة الخاصة بنا. بيتزا هوت سبايسي الشهيرة محملة بقطع الببروني والهلابينو والجبنة الغنية.",
+    stat: "3,000",
+    statLabel: "ريال للبيتزا الكبيرة",
     accent: "#FFD700",
+    image: "/images/pizza.png",
   },
 ];
 
@@ -115,37 +119,36 @@ export default function ShowcaseSection() {
     <section
       id="showcase"
       ref={sectionRef}
-      className="relative py-32 lg:py-40 overflow-hidden"
+      className="relative py-20 sm:py-32 lg:py-40 overflow-hidden"
     >
       {/* Section background accent */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-red/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-orange/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section heading */}
         <div className="showcase-heading text-center mb-20">
           <motion.span
-            className="inline-block text-sm font-semibold tracking-[0.3em] uppercase text-brand-red mb-4"
+            className="inline-block text-sm font-semibold tracking-[0.15em] uppercase text-brand-red mb-4 font-arabic"
           >
-            Our Signature
+            أطباقنا المميزة
           </motion.span>
           <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
-            Flavor{" "}
-            <span className="text-gradient-brand">Showcase</span>
+            معرض{" "}
+            <span className="text-gradient-brand">النكهات</span>
           </h2>
           <p className="mt-4 text-white/40 text-lg max-w-xl mx-auto">
-            Every dish tells a story of bold spices, fresh ingredients, and
-            culinary craftsmanship.
+            كل طبق يروي قصة من البهارات الجريئة، والمكونات الطازجة، وحرفية الطهي الرفيعة.
           </p>
         </div>
 
         {/* Showcase cards */}
-        <div className="space-y-24 lg:space-y-32">
+        <div className="space-y-12 sm:space-y-24 lg:space-y-32">
           {showcaseItems.map((item, i) => (
             <div
               key={item.title}
               ref={(el) => { cardsRef.current[i] = el; }}
-              className="glass-card rounded-3xl p-8 lg:p-12 relative overflow-hidden group"
+              className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-12 relative overflow-hidden group"
               style={{ perspective: "1000px" }}
             >
               {/* Accent border glow */}
@@ -159,7 +162,7 @@ export default function ShowcaseSection() {
               <div
                 className={`flex flex-col ${
                   i % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
-                } items-center gap-12`}
+                } items-center gap-6 sm:gap-12`}
               >
                 {/* Text side */}
                 <div className="flex-1 space-y-6">
@@ -183,9 +186,9 @@ export default function ShowcaseSection() {
                   </p>
 
                   {/* Stat */}
-                  <div className="flex items-end gap-3 pt-4">
+                  <div className="flex items-end gap-3 pt-2 sm:pt-4">
                     <span
-                      className="stat-number font-display text-5xl lg:text-6xl font-black"
+                      className="stat-number font-display text-4xl sm:text-5xl lg:text-6xl font-black"
                       style={{ color: item.accent }}
                     >
                       {item.stat}
@@ -196,12 +199,12 @@ export default function ShowcaseSection() {
                   </div>
                 </div>
 
-                {/* Visual side — placeholder for food images */}
+                {/* Visual side — REAL FOOD IMAGE */}
                 <div className="flex-1 relative">
                   <div
-                    className="w-full aspect-square max-w-md mx-auto rounded-2xl flex items-center justify-center relative overflow-hidden"
+                    className="w-full aspect-square max-w-md mx-auto rounded-3xl flex items-center justify-center relative overflow-hidden"
                     style={{
-                      background: `radial-gradient(circle at center, ${item.accent}15, transparent 70%)`,
+                      background: `radial-gradient(circle at center, ${item.accent}20, transparent 70%)`,
                     }}
                   >
                     {/* Decorative circles */}
@@ -218,15 +221,26 @@ export default function ShowcaseSection() {
                       }}
                     />
 
-                    {/* Placeholder icon */}
-                    <div className="text-center">
-                      <span className="text-7xl">
-                        {i === 0 ? "🌯" : i === 1 ? "🍗" : "🍕"}
-                      </span>
-                      <p className="text-white/20 text-xs mt-4 tracking-widest uppercase">
-                        Image placeholder
-                      </p>
-                    </div>
+                    {/* Food product image */}
+                    <motion.div
+                      className="relative w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 z-10"
+                      whileHover={{ scale: 1.05, rotate: i % 2 === 0 ? 5 : -5 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        className="object-contain drop-shadow-2xl"
+                        sizes="(max-width: 768px) 288px, 320px"
+                      />
+                    </motion.div>
+
+                    {/* Floor glow shadow */}
+                    <div
+                      className="absolute bottom-4 left-1/2 -translate-x-1/2 w-2/3 h-6 rounded-full blur-xl opacity-40 pointer-events-none"
+                      style={{ backgroundColor: item.accent }}
+                    />
                   </div>
                 </div>
               </div>

@@ -1,5 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Outfit, Cairo } from "next/font/google";
+import { CartProvider } from "@/context/CartContext";
+import CartDrawer from "@/components/ui/CartDrawer";
+import OrderHistoryDrawer from "@/components/ui/OrderHistoryDrawer";
+import LiveNotificationListener from "@/components/ui/LiveNotificationListener";
+import MobileBottomNav from "@/components/ui/MobileBottomNav";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,9 +26,9 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "Hot Spicy | Premium Fast Food Experience",
+  title: "هوت سبايسي | تجربة وجبات سريعة فاخرة",
   description:
-    "Discover the bold flavors of Hot Spicy Fast Food — Shawarma, Broast, Gourmet Pizza, Burgers & Fresh Juices. An immersive dining experience crafted with passion.",
+    "اكتشف النكهات الجريئة مع هوت سبايسي للوجبات السريعة — شاورما، بروست، بيتزا فاخرة، برجر وعصائر طازجة. تجربة فريدة مصممة بشغف.",
   keywords: [
     "Hot Spicy",
     "Fast Food",
@@ -33,13 +38,22 @@ export const metadata: Metadata = {
     "Burgers",
     "Restaurant",
     "صنعاء",
+    "هوت سبايسي",
+    "مطعم وجبات سريعة",
   ],
   openGraph: {
-    title: "Hot Spicy | Premium Fast Food Experience",
+    title: "هوت سبايسي | تجربة وجبات سريعة فاخرة",
     description:
-      "Bold flavors, premium quality. Shawarma, Broast, Pizza & more.",
+      "نكهات جريئة وجودة ممتازة. شاورما، بروست، بيتزا والمزيد.",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -48,11 +62,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="ar" dir="rtl" className="dark">
       <body
         className={`${inter.variable} ${outfit.variable} ${cairo.variable} font-body antialiased noise-overlay`}
       >
-        {children}
+        <CartProvider>
+          {children}
+          <CartDrawer />
+          <OrderHistoryDrawer />
+          <LiveNotificationListener />
+          <MobileBottomNav />
+        </CartProvider>
       </body>
     </html>
   );
