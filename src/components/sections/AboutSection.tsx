@@ -73,7 +73,7 @@ export default function AboutSection() {
           </h2>
           <p className="mt-6 text-white/40 text-lg leading-relaxed">
             What started as a small kitchen with a big dream has grown into
-            Sana'a&apos;s most beloved fast food destination. We believe in bold
+            Sana&apos;a&apos;s most beloved fast food destination. We believe in bold
             flavors, fresh ingredients, and the kind of spice that makes you
             come back for more. Every recipe is crafted with passion and a
             relentless pursuit of taste perfection.

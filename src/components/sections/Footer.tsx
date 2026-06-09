@@ -47,7 +47,7 @@ export default function Footer() {
             </div>
             <p className="text-white/40 text-sm leading-relaxed mb-6">
               Crafted with fire & passion since day one. Premium fast food
-              experience in Sana'a, Yemen.
+              experience in Sana&apos;a, Yemen.
             </p>
 
             {/* Contact info */}
