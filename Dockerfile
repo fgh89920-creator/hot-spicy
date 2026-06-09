@@ -26,15 +26,19 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Install a lightweight static server
-RUN npm install -g serve
+# Copy static assets
+COPY --from=builder /app/public ./public
 
-# Copy static build output
-COPY --from=builder --chown=nextjs:nodejs /app/out ./out
+# Set permissions for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Copy standalone output traces
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
@@ -42,5 +46,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Serve the static files on port 3000
-CMD ["serve", "-s", "out", "-l", "3000"]
+# Run the standalone Node.js server
+CMD ["node", "server.js"]
