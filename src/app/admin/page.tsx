@@ -54,7 +54,7 @@ export default function AdminDashboard() {
 
   const handlePasscodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validPasscodes = (process.env.NEXT_PUBLIC_ADMIN_PASSCODES || "hotspicy2026")
+    const validPasscodes = (process.env.NEXT_PUBLIC_ADMIN_PASSCODES || "775574469")
       .split(",")
       .map((p) => p.trim().toLowerCase());
     if (validPasscodes.includes(passcode.toLowerCase())) {
@@ -165,23 +165,7 @@ export default function AdminDashboard() {
             </button>
           </form>
 
-          {isFirebaseEnabled && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-px bg-white/10 flex-1" />
-                <span className="text-[10px] text-white/30 uppercase tracking-widest">أو</span>
-                <div className="h-px bg-white/10 flex-1" />
-              </div>
-
-              <button
-                onClick={handleGoogleLogin}
-                className="w-full py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-2xl text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
-              >
-                <span className="text-blue-400 font-bold">G</span>
-                <span>تسجيل الدخول بحساب Google</span>
-              </button>
-            </div>
-          )}
+          {/* Removed Google Login */}
 
           <div className="text-center">
             <Link
